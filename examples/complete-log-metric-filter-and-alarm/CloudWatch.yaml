@@ -56,20 +56,19 @@ Cloudwatch:
     AlarmActions:
       OK:
         default: 
-          dev: critical
-          test: critical
-          prod: critical
+          development: critical
+          testing: critical
+          production: critical
       ALARM:
         default:
-          dev: critical
-          test: critical
-          prod: critical
+          development: critical
+          testing: critical
+          production: critical
     Environment:
-      - dev
-      - test
-      - prod
-      - sandbox1
-
+      - development
+      - testing
+      - production
+      
    - Name: redis-connections
     Status: 1
     Description: Exeeded 250 average elasticache current connections.
@@ -102,14 +101,19 @@ Cloudwatch:
     AlarmActions:
       OK: 
         default: 
-          prod: critical 
+          development: critical
+          testing: critical
+          production: critical
       ALARM:
         default: 
-          dev: critical
+          development: critical
+          testing: critical
+          production: critical
           
     Environment: 
-      - dev
-      - prod
+      - development
+      - testing
+      - production
 
   - Name: redis-memory
     Status: 1
@@ -130,13 +134,19 @@ Cloudwatch:
     AlarmActions:
       OK: 
         default: 
-          dev: critical
+          development: critical
+          testing: critical
+          production: critical
       ALARM:
         default: 
-          dev: critical
+          development: critical
+          testing: critical
+          production: critical
+          
     Environment: 
-      - dev
-      - prod
+      - development
+      - testing
+      - production
 
   - Name: websocket-subscriptions
     Status: 1
@@ -160,10 +170,15 @@ Cloudwatch:
     AlarmActions:
       OK: 
         default: 
-          dev: critical
+          development: critical
+          testing: critical
+          production: critical
       ALARM:
         default: 
-          dev: critical
+          development: critical
+          testing: critical
+          production: critical
     Environment: 
-      - dev
-      - prod
+      - development
+      - testing
+      - production
