@@ -1,0 +1,169 @@
+Cloudwatch:
+  - Name: cpu-util-${ECS_SERVICES}
+    Status: 1
+    Description: CPU utilization over 90%
+    Namespace: AWS/ECS
+    Metrics: "CPUUtilization"
+    Dimensions:
+      - Name: ClusterName
+        Value: ${ECS_CLUSTER}
+      - Name: ServiceName
+        Value: ${ECS_SERVICES}
+    Query:
+      - id: "e1"
+        return_data: true
+        expression: "IF ((e2 >90),1,0) || IF ((e3 < 1),1,0)"
+        label: "cpu-diff"
+      - id: "e2"
+        return_data: false
+        expression: "IF( HOUR(m1) == 22 AND ( MINUTE(m1) >=0 AND MINUTE(m1) <=15) , 50 , m1)"
+        label: "Max fixing hour"
+      - id: "e3"
+        return_data: false
+        expression: "IF( HOUR(m2) == 22 AND ( MINUTE(m2) >=0 AND MINUTE(m2) <=15) , 50 , m2)"
+        label: "Min fixing hour"
+      - id: "e4"
+        return_data: false
+        expression: "IF( HOUR(m2) == 22 AND ( MINUTE(m2) >=0 AND MINUTE(m2) <=15) , 50 , m2)"
+        label: "Min fixing hour"
+      - id: "m1"
+        metric:
+          - namespace: AWS/ECS
+            metric_name: CPUUtilization
+            period: 300
+            stat: "Maximum"
+            unit: "Percent"
+            dimensions:
+              ClusterName: ${ECS_CLUSTER}
+              ServiceName: ${ECS_SERVICES}
+      - id: "m2"
+        metric:
+          - namespace: AWS/ECS
+            metric_name: CPUUtilization
+            period: 300
+            stat: "Minimum"
+            unit: "Percent"
+            dimensions:
+              ClusterName: ${ECS_CLUSTER}
+              ServiceName: ${ECS_SERVICES}
+    EvaluationPeriods: 2
+    Period: 60
+    Operator: GreaterThanOrEqualToThreshold
+    Statistic: Maximum
+    Unit: Percent # Add the unit if necessary
+    Threshold: 90
+    TreatMissingData: notBreaching
+    AlarmActions:
+      OK:
+        default: 
+          dev: critical
+          test: critical
+          prod: critical
+      ALARM:
+        default:
+          dev: critical
+          test: critical
+          prod: critical
+    Environment:
+      - dev
+      - test
+      - prod
+      - sandbox1
+
+   - Name: redis-connections
+    Status: 1
+    Description: Exeeded 250 average elasticache current connections.
+    Namespace: AWS/ElastiCache
+    Metrics: CurrConnections
+    Dimensions:
+      - Name:
+        Value:
+    Query: 
+      - label: "expression redis cluster"
+        expression: MAX(METRICS())
+        return_data: true
+%{ for nodeK,nodeV in rediscluster ~}
+      - label: "metric redis cluster ${nodeV}"
+        metric: 
+          namespace: AWS/ElastiCache
+          metric_name: CurrConnections
+          period: 60
+          stat: Average
+          dimensions: 
+            CacheClusterId: ${nodeV}
+%{ endfor ~}          
+    EvaluationPeriods: 2
+    Period: 60
+    Operator: GreaterThanOrEqualToThreshold
+    Statistic: Average
+    Unit:
+    Threshold: 250
+    TreatMissingData: breaching
+    AlarmActions:
+      OK: 
+        default: 
+          prod: critical 
+      ALARM:
+        default: 
+          dev: critical
+          
+    Environment: 
+      - dev
+      - prod
+
+  - Name: redis-memory
+    Status: 1
+    Description: average elasticache database memory over 30%.
+    Namespace: AWS/ElastiCache
+    Metrics: DatabaseMemoryUsagePercentage
+    Dimensions:
+      - Name:
+        Value:
+    EvaluationPeriods: 2
+    Period: 60
+    Operator: GreaterThanOrEqualToThreshold
+    Statistic: Average
+    Unit:
+    Threshold: 30
+    TreatMissingData: breaching
+    AlertLevel: warn
+    AlarmActions:
+      OK: 
+        default: 
+          dev: critical
+      ALARM:
+        default: 
+          dev: critical
+    Environment: 
+      - dev
+      - prod
+
+  - Name: websocket-subscriptions
+    Status: 1
+    Description: Check websocket subscriptions.
+    Namespace: cryptofeed/websocketmonitoring
+    Metrics: SubscribeCount
+    CustomMetrics: 
+      Patten: '{$.level = "INFO" && $.message = "Subscribed*"}'
+      LogGroupName: ${websocketmonitoring.log_group_name}
+    Dimensions:
+      - Name:
+        Value:
+    EvaluationPeriods: 2
+    Period: 60
+    Operator: LessThanOrEqualToThreshold
+    Statistic: Sum
+    Unit:
+    Threshold: 30
+    TreatMissingData: breaching
+    AlertLevel: critical
+    AlarmActions:
+      OK: 
+        default: 
+          dev: critical
+      ALARM:
+        default: 
+          dev: critical
+    Environment: 
+      - dev
+      - prod
