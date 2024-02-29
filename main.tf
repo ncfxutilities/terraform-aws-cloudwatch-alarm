@@ -80,7 +80,7 @@ module "log-metric-filter" {
   log_group_name = each.value.Config.CustomMetrics.LogGroupName
 
   name    = "${each.key}-${each.value.Config.Metrics}-metricfilter"
-  pattern = each.value.Config.CustomMetrics.Patten
+  pattern = each.value.Config.CustomMetrics.Pattern
 
   metric_transformation_namespace = each.value.Config.Namespace
   metric_transformation_name      = each.value.Config.Metrics
