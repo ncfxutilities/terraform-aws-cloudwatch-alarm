@@ -1,0 +1,21 @@
+name: SonarCloud Scan
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  id-token: write
+  contents: read # This is required for actions/checkout
+
+concurrency:
+  group: "one-at-a-time-sonarcloud"
+# A workflow jobs
+jobs:
+  sonarcloud:
+    name: SonarCloud reusable actions
+    uses: ncfxdeployment/github-reusable-workflow/.github/workflows/sonarcloud.yaml@master
+    secrets: inherit
